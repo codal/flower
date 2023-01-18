@@ -4,6 +4,7 @@ import shelve
 import logging
 import threading
 import collections
+import datetime
 
 from functools import partial
 
@@ -78,6 +79,7 @@ class EventsState(State):
         event_type = event['type']
 
         self.counter[worker_name][event_type] += 1
+        self.counter[worker_name]['last_seen_ts'] = None
 
         if event_type.startswith('task-'):
             task_id = event['uuid']
@@ -109,6 +111,8 @@ class EventsState(State):
 
         if event_type == 'worker-heartbeat':
             self.metrics.worker_online.labels(worker_name).set(1)
+            self.counter[worker_name]['last_seen_ts'] = datetime.datetime.utcnow()
+            self.counter[worker_name]['last_offline_ts'] = None
 
             num_executing_tasks = event.get('active')
             if num_executing_tasks is not None:
@@ -116,6 +120,12 @@ class EventsState(State):
 
         if event_type == 'worker-offline':
             self.metrics.worker_online.labels(worker_name).set(0)
+
+        for wk_n, wk_v in self.counter.items():
+            if self.counter[wk_n].get('last_seen_ts') and not self.counter[wk_n].get('last_offline_ts'):
+                if (datetime.datetime.utcnow() - self.counter[wk_n].get('last_seen_ts')).seconds > 30:
+                    self.metrics.worker_online.labels(wk_n).set(0)
+                    self.counter[wk_n]['last_offline_ts'] = datetime.datetime.utcnow()
 
 
 
