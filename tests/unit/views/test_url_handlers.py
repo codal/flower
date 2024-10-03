@@ -1,11 +1,15 @@
-from tests.unit import AsyncHTTPTestCase
-from flower.app import rewrite_handler
+import os
+from unittest.mock import patch
+
 from tornado.web import url
+
+from flower.app import rewrite_handler
+from tests.unit import AsyncHTTPTestCase
 
 
 class UrlsTests(AsyncHTTPTestCase):
-    def test_dashboard_url(self):
-        r = self.get('/dashboard')
+    def test_workers_url(self):
+        r = self.get('/workers')
         self.assertEqual(200, r.code)
 
     def test_root_url(self):
@@ -13,30 +17,33 @@ class UrlsTests(AsyncHTTPTestCase):
         self.assertEqual(200, r.code)
 
     def test_tasks_api_url(self):
-        r = self.get('/api/tasks')
-        self.assertEqual(200, r.code)
+        with patch.dict(os.environ, {"FLOWER_UNAUTHENTICATED_API": "true"}):
+            r = self.get('/api/tasks')
+            self.assertEqual(200, r.code)
 
 
 class URLPrefixTests(AsyncHTTPTestCase):
     def setUp(self):
-        with self.mock_option('url_prefix', 'test_root'):
-            super(URLPrefixTests, self).setUp()
+        self.url_prefix = '/test_root'
+        with self.mock_option('url_prefix', self.url_prefix):
+            super().setUp()
 
     def test_tuple_handler_rewrite(self):
-        r = self.get('/test_root/dashboard')
+        r = self.get(self.url_prefix + '/workers')
         self.assertEqual(200, r.code)
 
     def test_root_url(self):
-        r = self.get('/test_root/')
+        r = self.get(self.url_prefix + '/')
         self.assertEqual(200, r.code)
 
     def test_tasks_api_url(self):
-        r = self.get('/test_root/api/tasks')
-        self.assertEqual(200, r.code)
+        with patch.dict(os.environ, {'FLOWER_UNAUTHENTICATED_API': 'true'}):
+            r = self.get(self.url_prefix + '/api/tasks')
+            self.assertEqual(200, r.code)
 
     def test_base_url_no_longer_working(self):
-        r = self.get('/dashboard')
-        self.assertNotEqual(200, r.code)
+        r = self.get('/')
+        self.assertEqual(404, r.code)
 
 
 class RewriteHandlerTests(AsyncHTTPTestCase):
