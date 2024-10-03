@@ -115,6 +115,7 @@ class EventsState(State):
             self.metrics.worker_online.labels(worker_name).set(0)
 
         # pylint: disable=unnecessary-dict-index-lookup
+        # pylint: disable=unused-variable
         for wk_n, wk_v in self.counter.items():
             if self.counter[wk_n].get('last_seen_ts') and not self.counter[wk_n].get('last_offline_ts'):
                 if (datetime.datetime.utcnow() - datetime.datetime.fromisoformat(self.counter[wk_n].get('last_seen_ts'))).seconds > 30:
