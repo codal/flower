@@ -63,7 +63,7 @@ class EventsState(State):
         self.counter = collections.defaultdict(Counter)
         self.metrics = get_prometheus_metrics()
 
-    # pylint: too-many-branches
+    # pylint: disable=too-many-branches
     def event(self, event):
         # Save the event
         super().event(event)
@@ -114,7 +114,7 @@ class EventsState(State):
         if event_type == 'worker-offline':
             self.metrics.worker_online.labels(worker_name).set(0)
 
-        # pylint: disable=too-many-arguments
+        # pylint: disable=unnecessary-dict-index-lookup
         for wk_n, wk_v in self.counter.items():
             if self.counter[wk_n].get('last_seen_ts') and not self.counter[wk_n].get('last_offline_ts'):
                 if (datetime.datetime.utcnow() - datetime.datetime.fromisoformat(self.counter[wk_n].get('last_seen_ts'))).seconds > 30:
