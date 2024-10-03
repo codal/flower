@@ -4,7 +4,8 @@ import time
 from .search import parse_search_terms, satisfies_search_terms
 
 
-# pylint: disable=too-many-branches,too-many-locals,too-many-arguments,too-many-positional-arguments
+# pylint: disable=too-many-branches,too-many-locals,too-many-arguments
+# pylint: disable=too-many-positional-arguments
 def iter_tasks(events, limit=None, offset=0, type=None, worker=None, state=None,
                sort_by=None, received_start=None, received_end=None,
                started_start=None, started_end=None, search=None):

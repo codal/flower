@@ -127,7 +127,6 @@ class Events(threading.Thread):
     events_enable_interval = 5000
 
     # pylint: disable=too-many-arguments
-    # pylint: disable=too-many-positional-arguments
     def __init__(self, capp, io_loop, db=None, persistent=False,
                  enable_events=True, state_save_interval=0,
                  **kwargs):
